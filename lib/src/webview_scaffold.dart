@@ -144,6 +144,8 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
       bottomNavigationBar: widget.bottomNavigationBar,
       body: _WebviewPlaceholder(
         onRectChanged: (Rect value) {
+          print(value.bottom);
+          value = Rect.fromLTRB(value.left, value.top, value.right, 0);
           if (_rect == null) {
             _rect = value;
             widget.webviewReference.launch(
