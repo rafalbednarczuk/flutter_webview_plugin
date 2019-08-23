@@ -7,7 +7,6 @@ import 'package:flutter/rendering.dart';
 import 'base.dart';
 
 class WebviewScaffold extends StatefulWidget {
-
   const WebviewScaffold({
     Key key,
     this.appBar,
@@ -38,6 +37,7 @@ class WebviewScaffold extends StatefulWidget {
     this.invalidUrlRegex,
     this.geolocationEnabled,
     this.debuggingEnabled = false,
+    this.webviewReference,
   }) : super(key: key);
 
   final PreferredSizeWidget appBar;
@@ -68,13 +68,14 @@ class WebviewScaffold extends StatefulWidget {
   final bool withOverviewMode;
   final bool useWideViewPort;
   final bool debuggingEnabled;
+  final FlutterWebviewPlugin webviewReference;
 
   @override
-  WebviewScaffoldState createState() => WebviewScaffoldState();
+  _WebviewScaffoldState createState() => _WebviewScaffoldState();
 }
 
-class WebviewScaffoldState extends State<WebviewScaffold> {
-  final webviewReference = FlutterWebviewPlugin();
+class _WebviewScaffoldState extends State<WebviewScaffold> {
+//  final webviewReference = FlutterWebviewPlugin();
   Rect _rect;
   Timer _resizeTimer;
   StreamSubscription<WebViewStateChanged> _onStateChanged;
@@ -84,9 +85,9 @@ class WebviewScaffoldState extends State<WebviewScaffold> {
   @override
   void initState() {
     super.initState();
-    webviewReference.close();
+    widget.webviewReference.close();
 
-    _onBack = webviewReference.onBack.listen((_) async {
+    _onBack = widget.webviewReference.onBack.listen((_) async {
       if (!mounted) return;
 
       // The willPop/pop pair here is equivalent to Navigator.maybePop(),
@@ -96,7 +97,7 @@ class WebviewScaffoldState extends State<WebviewScaffold> {
         // Close the webview if it's on the route at the top of the stack.
         final isOnTopMostRoute = _topMostRoute == ModalRoute.of(context);
         if (isOnTopMostRoute) {
-          webviewReference.close();
+          widget.webviewReference.close();
         }
         Navigator.pop(context);
       }
@@ -104,9 +105,9 @@ class WebviewScaffoldState extends State<WebviewScaffold> {
 
     if (widget.hidden) {
       _onStateChanged =
-          webviewReference.onStateChanged.listen((WebViewStateChanged state) {
+          widget.webviewReference.onStateChanged.listen((WebViewStateChanged state) {
         if (state.type == WebViewState.finishLoad) {
-          webviewReference.show();
+          widget.webviewReference.show();
         }
       });
     }
@@ -127,11 +128,11 @@ class WebviewScaffoldState extends State<WebviewScaffold> {
     super.dispose();
     _onBack?.cancel();
     _resizeTimer?.cancel();
-    webviewReference.close();
+    widget.webviewReference.close();
     if (widget.hidden) {
       _onStateChanged.cancel();
     }
-    webviewReference.dispose();
+    widget.webviewReference.dispose();
   }
 
   @override
@@ -145,7 +146,7 @@ class WebviewScaffoldState extends State<WebviewScaffold> {
         onRectChanged: (Rect value) {
           if (_rect == null) {
             _rect = value;
-            webviewReference.launch(
+            widget.webviewReference.launch(
               widget.url,
               headers: widget.headers,
               withJavascript: widget.withJavascript,
@@ -176,12 +177,13 @@ class WebviewScaffoldState extends State<WebviewScaffold> {
               _resizeTimer?.cancel();
               _resizeTimer = Timer(const Duration(milliseconds: 250), () {
                 // avoid resizing to fast when build is called multiple time
-                webviewReference.resize(_rect);
+                widget.webviewReference.resize(_rect);
               });
             }
           }
         },
-        child: widget.initialChild ?? const Center(child: const CircularProgressIndicator()),
+        child: widget.initialChild ??
+            const Center(child: const CircularProgressIndicator()),
       ),
     );
   }
@@ -204,7 +206,8 @@ class _WebviewPlaceholder extends SingleChildRenderObjectWidget {
   }
 
   @override
-  void updateRenderObject(BuildContext context, _WebviewPlaceholderRender renderObject) {
+  void updateRenderObject(
+      BuildContext context, _WebviewPlaceholderRender renderObject) {
     renderObject..onRectChanged = onRectChanged;
   }
 }
