@@ -37,7 +37,7 @@ class WebviewScaffold extends StatefulWidget {
     this.invalidUrlRegex,
     this.geolocationEnabled,
     this.debuggingEnabled = false,
-    this.webviewReference,
+    @required this.webviewReference,
   }) : super(key: key);
 
   final PreferredSizeWidget appBar;
@@ -104,8 +104,8 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
     });
 
     if (widget.hidden) {
-      _onStateChanged =
-          widget.webviewReference.onStateChanged.listen((WebViewStateChanged state) {
+      _onStateChanged = widget.webviewReference.onStateChanged
+          .listen((WebViewStateChanged state) {
         if (state.type == WebViewState.finishLoad) {
           widget.webviewReference.show();
         }
@@ -144,8 +144,9 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
       bottomNavigationBar: widget.bottomNavigationBar,
       body: _WebviewPlaceholder(
         onRectChanged: (Rect value) {
-          print(value.bottom);
-          value = Rect.fromLTRB(value.left, value.top, value.right, 0);
+          print('bottom ${value.bottom}');
+          value = Rect.fromLTRB(value.left, value.top, value.right,
+              MediaQuery.of(context).size.height);
           if (_rect == null) {
             _rect = value;
             widget.webviewReference.launch(
