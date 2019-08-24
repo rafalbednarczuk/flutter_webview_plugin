@@ -99,7 +99,7 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
         if (isOnTopMostRoute) {
           widget.webviewReference.close();
         }
-        Navigator.pop(context);
+        Navigator.of(context).pop(false);
       }
     });
 
@@ -144,7 +144,6 @@ class _WebviewScaffoldState extends State<WebviewScaffold> {
       bottomNavigationBar: widget.bottomNavigationBar,
       body: _WebviewPlaceholder(
         onRectChanged: (Rect value) {
-          print('bottom ${value.bottom}');
           value = Rect.fromLTRB(value.left, value.top, value.right,
               MediaQuery.of(context).size.height);
           if (_rect == null) {
